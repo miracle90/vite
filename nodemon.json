@@ -1,0 +1,4 @@
+{
+  "watch": ["vite"],
+  "exec": "vite"
+}
