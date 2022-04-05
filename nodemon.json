@@ -1,4 +1,4 @@
 {
   "watch": ["vite"],
-  "exec": "vite"
+  "exec": "myvite"
 }

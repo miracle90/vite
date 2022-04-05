@@ -1,11 +1,11 @@
 {
-  "name": "vite",
+  "name": "myvite",
   "version": "1.0.0",
   "main": "index.js",
   "license": "MIT",
   "bin": "./bin/www.js",
   "scripts": {
-    "dev": "vite"
+    "dev": "myvite"
   },
   "dependencies": {
     "koa": "^2.13.4",

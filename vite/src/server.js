@@ -1,25 +1,40 @@
 const Koa = require("koa");
-const { moduleRewritePlugin } = require("./serverPluginModuleRewrite");
+const dedent = require("dedent");
 const serveStaticPlugin = require("./serverPluginServeStatic");
+const moduleRewritePlugin = require("./serverPluginModuleRewrite");
+const moduleResolvePlugin = require("./serverPluginModuleResolve");
+const injectProcessPlugin = require('./serverPluginInjectProcess')
+const vuePlugin = require('./serverPluginVue')
 
 function createServer() {
-  let app = new Koa();
-  // 创建一个上下文，来给不同的插件共享功能
+  const app = new Koa();
+  const root = process.cwd();
+  // 构建上下文对象
   const context = {
     app,
-    root: process.cwd(),
+    root,
   };
-  console.log(context.root);
-  // 洋葱模型，先按顺序执行，后面的按照相反的顺序再执行一遍
-  const resolvePlugin = [
-    moduleRewritePlugin, // 2、重写请求的路径
-    serveStaticPlugin, // 1、静态服务插件，实现返回插件的功能
+  app.use((ctx, next) => {
+    // 扩展ctx属性
+    Object.assign(ctx, context);
+    return next();
+  });
+  const resolvedPlugins = [
+    injectProcessPlugin,
+    moduleRewritePlugin,
+    moduleResolvePlugin,
+    vuePlugin,
+    serveStaticPlugin,
   ];
-  resolvePlugin.forEach((plugiin) => plugiin(context));
-
-  // 实现静态服务功能，访问我们的服务器，可以返回对应的文件 koa-static
+  // 依次注册所有插件
+  resolvedPlugins.forEach((plugin) => plugin(context));
   return app;
 }
-createServer().listen(4000, () => {
-  console.log("vite started  at 4000");
+createServer().listen(4000, async () => {
+  const chalk = await import("chalk");
+  console.log(
+    dedent`${chalk.default.green(`vite-cli dev server running at:`)}
+           > Local: http://localhost:4000/
+    `
+  );
 });
